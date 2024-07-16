@@ -2,10 +2,285 @@
 <head>
     <title>RPG</title>
     <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="/css/my.css" rel="stylesheet">
 </head>
 <body>
 <h1>RPG admin panel</h1>
+<h2>Accounts list:</h2>
+<br>
+<div>Count per page:
+    <label>
+        <select id="select" class="form-select">
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="12">12</option>
+        </select>
+    </label>
+</div>
+<br>
+<table id="table1">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Title</th>
+        <th>Race</th>
+        <th>Profession</th>
+        <th>Level</th>
+        <th>Birthday</th>
+        <th>Banned</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+</table>
+<div>pages :</div>
+<div id="pages"></div>
+<br>
+<h2>Create new Account</h2>
+<form action="">
+    <label>Name: </label><input class="form-control" type="text" id="name" maxlength="12"
+                                minlength="1" required>
+    <br>
+    <label>Title: </label><input class="form-control" type="text" id="title" minlength="1" maxlength="30" required>
+    <br>
+    <label>Race: <select class="form-select" id="selectRace">
+        <option value="HUMAN" selected>HUMAN</option>
+        <option value="DWARF">DWARF</option>
+        <option value="ELF">ELF</option>
+        <option value="GIANT">GIANT</option>
+        <option value="ORC">ORC</option>
+        <option value="TROLL">TROLL</option>
+        <option value="HOBBIT">HOBBIT</option>
+    </select></label>
+    <br>
+    <label>Profession: <select class="form-select" id="selectProfession">
+        <option value="WARRIOR" selected>WARRIOR</option>
+        <option value="ROGUE">ROGUE</option>
+        <option value="SORCERER">SORCERER</option>
+        <option value="CLERIC">CLERIC</option>
+        <option value="PALADIN">PALADIN</option>
+        <option value="NAZGUL">NAZGUL</option>
+        <option value="WARLOCK">WARLOCK</option>
+        <option value="DRUID">DRUID</option>
+    </select></label>
+    <br>
+    <label>Level: </label><input class="form-control" type="number" id="level" max="100">
+    <br>
+    <label>Birthday: </label><input class="form-control" type="date" id="birthday">
+    <br>
+    <label>Banned: <select class="form-select" id="selectBanned">
+        <option value="true">true</option>
+        <option value="false" selected>false</option>
+    </select></label>
+    <br>
+    <input type="submit" class="btn" value="Submit" onclick="create()">
+</form>
 
+
+
+<script>
+    let playerCount = 0;
+    $.get("rest/players/count", result => {
+        console.log(result)
+        playerCount = result;
+    })
+    let currentPage = 1;
+    let currentSize = 4;
+
+    function getPlayers(pageNumber, pageSize) {
+        $.ajax({
+            type: "GET",
+            url: "rest/players",
+            data: {pageNumber: pageNumber - 1, pageSize: pageSize},
+            success: (result) => {
+                console.log(result)
+                $('.playerInfo').remove()
+                for (var row in result) {
+                    var values = result[row];
+                    var id = values.id;
+                    console.log(id)
+                    $("<tr class='playerInfo'>").appendTo("#table1").html("<td>" + values.id + "</td>" +
+                        "<td>" + values.name + "</td>" +
+                        "<td>" + values.title + "</td>" +
+                        "<td>" + values.race + "</td>" +
+                        "<td>" + values.profession + "</td>" +
+                        "<td>" + values.level + "</td>" +
+                        "<td>" + new Date(values.birthday).toLocaleDateString() + "</td>" +
+                        "<td>" + values.banned + "</td>" +
+                        "<td>" + "<button onclick='editLine(this.parentElement.parentElement)'><img src='/img/edit.png' alt=''></button>" + "</td>" +
+                        "<td>" + `<button value="${id}" onclick='deletePlayer(this.value);'><img src='/img/delete.png' alt=''></button>` + "</td>")
+
+
+                    // $("<td>").appendTo(tr).html("<button><img src='/img/edit.png' alt=''></button>")
+                    // $("<td>").appendTo(tr).html(`<button value="${id}" onclick='deletePlayer(this.value);getPlayers(currentPage, currentSize)'><img src='/img/delete.png' alt=''></button>`)
+                }
+                generatePages(currentPage, currentSize)
+            }
+        })
+    }
+
+    getPlayers(currentPage, currentSize)
+    let lineToEdit;
+
+    function editLine(line) {
+        console.log(line)
+        lineToEdit = line;
+        let i = 0;
+        for (const child of line.children) {
+            console.log(child)
+            if (i == 1 || i == 2) child.innerHTML = `<input value="` + child.innerText + `" type="text" >`;
+            if (i == 3) child.innerHTML = `<select name="race" id="races">
+  <option value="` + child.innerText + `" selected>` + child.innerText + `</option>
+  <option value="HUMAN">HUMAN</option>
+  <option value="DWARF">DWARF</option>
+  <option value="ELF">ELF</option>
+  <option value="GIANT">GIANT</option>
+  <option value="ORC">ORC</option>
+  <option value="TROLL">TROLL</option>
+  <option value="HOBBIT">HOBBIT</option>
+</select>`
+            if (i == 4) child.innerHTML = `<select name="profession" id="professions">
+  <option value="` + child.innerText + `" selected>` + child.innerText + `</option>
+  <option value="WARRIOR">WARRIOR</option>
+  <option value="ROGUE">ROGUE</option>
+  <option value="SORCERER">SORCERER</option>
+  <option value="CLERIC">CLERIC</option>
+  <option value="PALADIN">PALADIN</option>
+  <option value="NAZGUL">NAZGUL</option>
+  <option value="WARLOCK">WARLOCK</option>
+  <option value="DRUID">DRUID</option>
+</select>`
+            if (i == 7) child.innerHTML = `<select name="banned" id="bans">
+  <option value="` + child.innerText + `" selected>` + child.innerText + `</option>
+  <option value="true">true</option>
+  <option value="false">false</option>
+
+</select>`
+            if (i == 8) child.innerHTML = "<button onclick='update(lineToEdit)' class='editable'><img src='/img/save.png' alt=''></button>"
+            if (i == 9) child.innerHTML = ""
+            i++;
+        }
+    }
+
+    function update(row) {
+        let id;
+        let name;
+        let title;
+        let race;
+        let profession;
+        let banned;
+        let i = 0;
+        for (const element of row.children) {
+            switch (i) {
+                case 0:
+                    id = element.innerText;
+                    break;
+                case 1:
+                    name = element.children[0].value;
+                    break;
+                case 2:
+                    title = element.children[0].value;
+                    break;
+                case 3:
+                    race = element.children[0].value;
+                    break;
+                case 4:
+                    profession = element.children[0].value;
+                    break;
+                case 7:
+                    banned = element.children[0].value;
+                    break;
+            }
+            i++
+        }
+        $.ajax(
+            {
+                url: "/rest/players/" + id,
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/json;charset=UTF-8',
+                async: false,
+                data: JSON.stringify({
+                    "name": name,
+                    "title": title,
+                    "race": race,
+                    "profession": profession,
+                    "banned": banned
+                }),
+                success: result => {
+                    getPlayers(currentPage, currentSize)
+                    console.log(true)
+                }
+            }
+        )
+    }
+
+    function deletePlayer(id) {
+        let url = "/rest/players/" + id;
+        console.log(id)
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: function (result) {
+                // Do something with the result
+                getPlayers(currentPage, currentSize)
+            }
+        });
+    }
+
+    const e = document.getElementById("select");
+    e.addEventListener('change', ev => {
+        console.log(ev.target.children, ev.target.children.value, ev)
+        console.log(e.value)
+        generatePages(currentPage + 1, e.value)
+        currentSize = e.value;
+        getPlayers(currentPage, currentSize)
+    })
+
+    const generatePages = (pageNumber, pageSize) => {
+        $("#pages").html("")
+        for (let i = 1; i < playerCount / pageSize + 1; i++) {
+            if (i === pageNumber) $(`<button value='${i}'>${i}</button>`).appendTo("#pages").css("color", "red");
+            else $(`<button id="btn${i}" onClick="drawPages(${i});getPlayers(currentPage,currentSize)" value='${i}'>${i}</button>`).appendTo("#pages")
+        }
+    }
+    const drawPages = (num) => {
+        generatePages(num, e.value)
+        currentPage = num
+    }
+
+    function create() {
+        const name = document.getElementById("name").value;
+        const title = document.getElementById("title").value;
+        const race = document.getElementById("selectRace").value;
+        const profession = document.getElementById("selectProfession").value;
+        const level = document.getElementById("level").value;
+        const birthday = document.getElementById("birthday").value;
+        const banned = document.getElementById("selectBanned").value;
+        $.ajax({
+            url:"/rest/players",
+            type:"POST",
+            dataType:'json',
+            contentType: 'application/json;charset=UTF-8',
+            async: false,
+            data: JSON.stringify({
+                "name": name,
+                "title": title,
+                "race": race,
+                "profession": profession,
+                "banned": banned,
+                "level": level,
+                "birthday": new Date(birthday).getTime()
+
+            }),
+            success: result => {
+                playerCount++;
+                getPlayers(currentPage, currentSize)
+            }
+        })
+    }
+
+</script>
 </body>
 </html>
