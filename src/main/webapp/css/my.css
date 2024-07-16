@@ -1,0 +1,68 @@
+#table1 th{
+    border: #ff0c1b solid 2px;
+    border-radius: 2px;
+    text-align: center;
+}
+#table1 td{
+    border: #01779b solid 2px;
+    text-align: center;
+}
+body{
+    background: rgba(220, 220, 220, 0.78);
+}
+#table1{
+    background: rgba(0,0,0,0.71);
+    color: white;
+    margin-left: 25%;
+    transform: translateX(-25%);
+    width: 100%;
+    padding: 1px;
+    border-radius: 5px;
+}
+#table1 button{
+    background: rgba(0, 0, 0, 0);
+    border: none;
+    border-radius: 10px;
+    /*opacity: 0;*/
+}
+body{
+    text-align: center;
+    font-family: Arial;
+    align-items: center;
+    justify-content: center;
+
+}
+body button{
+    background-color: rgba(0,0,0,0.71);
+    border: #ff0c1b;
+    border-radius: 50%;
+    color: #0396c5;
+    font-weight: 500;
+    font-size: 20px;
+    margin: 6px;
+    width: 40px;
+    height: 40px;
+}
+form{
+    width: 200px;
+    background: white;
+    border: blue double 7px;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 10px;
+
+}
+form label{
+    width: 100%;
+}
+form input{
+    width: 100px;
+    border: blue 4px double;
+}
+.btn{
+    margin-top: 6px;
+    background-color: rgba(173, 255, 29, 0.49);
+    border-radius: 5px;
+    border: 7px blue double;
+    font-weight: 400;
+}
